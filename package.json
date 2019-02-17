@@ -1,0 +1,42 @@
+{
+  "name": "elastic-search",
+  "version": "1.0.0",
+  "description": "A simple search and auto-complete app with ElasticSearch",
+  "main": "index.js",
+  "scripts": {
+    "precommit": "lint-staged",
+    "prepush": "npm test",
+    "start": "node index.js",
+    "start:dev": "nodemon index.js",
+    "test": "NODE_ENV=test nyc --reporter=html --reporter=lcov --reporter=text-summary --reporter=json-summary mocha --exit --timeout=3000 test/unit --recursive",
+    "test:int": "NODE_ENV=test nyc --reporter=html --reporter=text-summary --reporter=json-summary node_modules/mocha/bin/mocha --exit --timeout=20000 test/integration --recursive"
+  },
+  "keywords": [
+    "elasticsearch",
+    "kibana",
+    "docker",
+    "supertest",
+    "mocha",
+    "chai",
+    "sinon",
+    "nyc"
+  ],
+  "author": "Afshan Aman",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "elasticsearch": "^15.4.1",
+    "express": "^4.16.4",
+    "helmet": "^3.15.1",
+    "joi": "^14.3.1"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "chai-http": "^4.2.0",
+    "dotenv": "^6.2.0",
+    "mocha": "^5.2.0",
+    "nyc": "^13.3.0",
+    "sinon": "^7.2.3",
+    "supertest": "^3.4.2"
+  }
+}
