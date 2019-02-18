@@ -18,4 +18,5 @@ It is assumed that you have installed node.js, npm, and docker on your system
 
 ## run integration tests
 (needs the elasticsearch running. Use docker-compose up)
+
 ```npm run test:int```
