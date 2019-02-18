@@ -1,11 +1,12 @@
 const { expect } = require('chai');
 const sinon = require('sinon');
-const esCrudService = require('../../../services/crudServives');
+const esCrudService = require('../../../services/crudService');
 const esClient = require('../../../clients/elasticsearchClient');
 const bulkUtils = require('../../../util/esBulkUtils');
 const {
   ES_INDEX_NOT_FOUND,
-  ES_GENERAL_ERROR
+  ES_GENERAL_ERROR,
+  ES_NO_CONNECTION
 } = require('../../../errors/messages');
 
 const sandbox = sinon.createSandbox();
@@ -15,7 +16,7 @@ describe.only('elasticSearch: crudServices', () => {
     sandbox.restore();
   });
 
-  describe('INDEX OPERATIONS', () => {
+  describe.only('INDEX OPERATIONS', () => {
     describe('createIndex', () => {
       it('successfully creates an index when indexName is valid', async () => {
         const indexName = 'es-test-index';
@@ -28,8 +29,8 @@ describe.only('elasticSearch: crudServices', () => {
           .stub(esClient.indices, 'create')
           .resolves(esCreateIndexResponse);
 
-        const { success, results } = await esCrudService.createIndex(indexName);
-        expect(success).to.be.equal(true);
+        const results = await esCrudService.createIndex(indexName);
+
         expect(results).to.be.an('object');
         expect(results)
           .to.have.property('acknowledged')
@@ -55,24 +56,16 @@ describe.only('elasticSearch: crudServices', () => {
         };
         const createIndexStub = sandbox
           .stub(esClient.indices, 'create')
-          .rejects(esCreateIndexError);
+          .throws(esCreateIndexError);
 
-        const { success, results } = await esCrudService.createIndex(indexName);
-        expect(success).to.be.equal(false);
-        expect(createIndexStub.getCall(0).args[0]).to.eql({ index: indexName });
-
-        expect(results)
-          .to.have.property('body')
-          .to.be.an('object');
-        expect(results.body)
-          .to.have.property('error')
-          .to.be.an('object');
-        expect(results.body)
-          .to.have.property('status')
-          .to.be.equal(400);
-        expect(results.body.error)
-          .to.have.property('type')
-          .to.be.equal('invalid_index_name_exception');
+        try {
+          await esCrudService.createIndex(indexName);
+        } catch (err) {
+          expect(err.message).to.be.equal('invalid_index_name_exception');
+          expect(createIndexStub.getCall(0).args[0]).to.eql({
+            index: indexName
+          });
+        }
       });
     });
 
@@ -87,8 +80,8 @@ describe.only('elasticSearch: crudServices', () => {
           .stub(esClient.indices, 'delete')
           .resolves(esDeleteIndexResponse);
 
-        const { success, results } = await esCrudService.deleteIndex(indexName);
-        expect(success).to.be.equal(true);
+        const results = await esCrudService.deleteIndex(indexName);
+
         expect(results)
           .to.be.an('object')
           .to.have.property('acknowledged')
@@ -103,10 +96,14 @@ describe.only('elasticSearch: crudServices', () => {
           .stub(esClient.indices, 'exists')
           .resolves(false);
 
-        const { success, results } = await esCrudService.deleteIndex(indexName);
-        expect(success).to.be.equal(false);
-        expect(results).to.be.equal(ES_INDEX_NOT_FOUND);
-        expect(existsIndexStub.getCall(0).args[0]).to.eql({ index: indexName });
+        try {
+          await esCrudService.deleteIndex(indexName);
+        } catch (err) {
+          expect(err.message).to.be.equal(ES_INDEX_NOT_FOUND);
+          expect(existsIndexStub.getCall(0).args[0]).to.eql({
+            index: indexName
+          });
+        }
       });
 
       it('gracefully exists if Elasticsearch fails to delete an index which exists', async () => {
@@ -118,11 +115,17 @@ describe.only('elasticSearch: crudServices', () => {
           .stub(esClient.indices, 'delete')
           .throws(ES_GENERAL_ERROR);
 
-        const { success, results } = await esCrudService.deleteIndex(indexName);
-        expect(success).to.be.equal(false);
-        expect(results).to.be.equal(ES_GENERAL_ERROR);
-        expect(existsIndexStub.getCall(0).args[0]).to.eql({ index: indexName });
-        expect(deleteIndexStub.getCall(0).args[0]).to.eql({ index: indexName });
+        try {
+          await esCrudService.deleteIndex(indexName);
+        } catch (err) {
+          expect(err.message).to.be.equal(ES_GENERAL_ERROR);
+          expect(existsIndexStub.getCall(0).args[0]).to.eql({
+            index: indexName
+          });
+          expect(deleteIndexStub.getCall(0).args[0]).to.eql({
+            index: indexName
+          });
+        }
       });
     });
 
@@ -133,8 +136,8 @@ describe.only('elasticSearch: crudServices', () => {
           .stub(esClient.indices, 'delete')
           .resolves(esDeleteAllIndicesResponse);
 
-        const { success, results } = await esCrudService.deleteAllIndices();
-        expect(success).to.be.equal(true);
+        const results = await esCrudService.deleteAllIndices();
+
         expect(results)
           .to.be.an('object')
           .to.have.property('acknowledged')
@@ -145,11 +148,14 @@ describe.only('elasticSearch: crudServices', () => {
       it('gracefully exits if ElasticSearch fails to delete all indices', async () => {
         const deleteIndexStub = sandbox
           .stub(esClient.indices, 'delete')
-          .throws();
+          .throws(ES_NO_CONNECTION);
 
-        const { success } = await esCrudService.deleteAllIndices();
-        expect(success).to.be.equal(false);
-        expect(deleteIndexStub.getCall(0).args[0]).to.eql({ index: '_all' });
+        try {
+          await esCrudService.deleteAllIndices();
+        } catch (err) {
+          expect(err.message).to.be.equal(ES_NO_CONNECTION);
+          expect(deleteIndexStub.getCall(0).args[0]).to.eql({ index: '_all' });
+        }
       });
     });
   });

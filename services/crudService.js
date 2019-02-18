@@ -1,70 +1,58 @@
-const esClient = require('../clients/elasticsearchClient')
+const esClient = require('../clients/elasticsearchClient');
 const bulkUtils = require('../util/esBulkUtils');
 
 const {
   ES_INDEX_NOT_FOUND,
-  ES_GENERAL_ERROR
+  ES_GENERAL_ERROR,
+  ES_NO_CONNECTION
 } = require('../errors/messages');
 
 module.exports = {
   /** * INDEX OPERATIONS ** */
   createIndex: async indexName => {
-    let success = false;
-    let results = false;
     const index = { index: indexName };
     try {
       const response = await esClient.indices.create(index);
       // console.log('TCL: createIndex response:\n', response);
-      success = true;
-      results = response;
+      return response;
     } catch (err) {
-      console.log(`createIndex Error:\n ${JSON.stringify(err, null, 2)}`);
-      results = err;
+      // console.log(`createIndex Error:\n ${JSON.stringify(err, null, 2)}`);
+      const error = err.body ? err.body.error.type : ES_GENERAL_ERROR;
+      throw new Error(error);
     }
-
-    return { success, results };
   },
   deleteIndex: async indexName => {
-    let success = false;
-    let results = false;
+    let response;
     const index = { index: indexName };
     try {
       const indexExists = await esClient.indices.exists(index);
 
       if (indexExists) {
         try {
-          const response = await esClient.indices.delete(index);
-          // console.log('TCL: deleteIndex response:\n', response);
-          success = true;
-          results = response;
+          response = await esClient.indices.delete(index);
+          return response;
         } catch (err) {
-          results = ES_GENERAL_ERROR;
+          throw new Error(ES_GENERAL_ERROR);
         }
       } else {
-        results = ES_INDEX_NOT_FOUND;
+        throw new Error(ES_INDEX_NOT_FOUND);
       }
     } catch (err) {
-      console.log(`deleteIndex Error:\n ${JSON.stringify(err, null, 2)}`);
-      results = err;
+      //console.log(`deleteIndex Error:\n ${JSON.stringify(err, null, 2)}`);
+      const error = err.body ? err.body.error.type : err.message;
+      throw new Error(error);
     }
-
-    return { success, results };
   },
   deleteAllIndices: async () => {
-    let success = false;
-    let results = false;
-
     try {
       const response = await esClient.indices.delete({ index: '_all' });
       // console.log('TCL: deleteAllIndices response:\n', response);
-      success = true;
-      results = response;
+      return response;
     } catch (err) {
-      console.log(`deleteAllIndices Error:\n ${JSON.stringify(err, null, 2)}`);
-      results = err;
+      // console.log(`deleteAllIndices Error:\n ${JSON.stringify(err, null, 2)}`);
+      const error = err.body ? err.body.error.type : ES_NO_CONNECTION;
+      throw new Error(error);
     }
-
-    return { success, results };
   },
 
   /** * DOCUMENT OPERATIONS ** */

@@ -9,10 +9,9 @@ const app = express();
 
 // MIDDLEWARE
 
-
 // ROTUES
-app.use('/', (req, res) => res.json("Welcome to the ElasticSearch Demo!"))
-app.use('/search', require('./routes/main.routes'))
+app.use('/', require('./routes/main.routes'));
+app.use('/elastic', require('./routes/elastic.routes'));
 
 // ERROR HANDLING
 app.use((req, res, next) => {
