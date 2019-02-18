@@ -1,20 +1,20 @@
-# pre-requisites
+## pre-requisites
 It is assumed that you have installed node.js, npm, and docker on your system
 
-# install dependencies
+##install dependencies
 ```npm i```
 
-# run elasticsearch and kibana in a docker container
+## run elasticsearch and kibana in a docker container
 ```docker-compose up```
 
-# run the node server
+## run the node server
 ```npm start```
 
-# run the node server with hot reload (using nodemon)
+## run the node server with hot reload (using nodemon)
 ```npm run start:dev```
 
-# run unit tests
+## run unit tests
 ```npm test```
 
-# run integration tests
+## run integration tests (needs the elasticsearch running. use docker-compose up)
 ```npm run test:int```
