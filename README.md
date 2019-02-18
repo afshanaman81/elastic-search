@@ -1,6 +1,8 @@
 ## pre-requisites
 It is assumed that you have installed node.js, npm, and docker on your system, and have downloaded the docker images for the latest elasticsearch and kibana (optional).
 
+This demo uses images of version 6.6 for both ES and Kibana, but if you are using a different set of images, update the docker-compose.yml to reflect that. 
+
 ## install dependencies
 ```npm i```
 
