@@ -1,5 +1,5 @@
 ## pre-requisites
-It is assumed that you have installed node.js, npm, and docker on your system
+It is assumed that you have installed node.js, npm, and docker on your system, and have downloaded the docker images for the latest elasticsearch and kibana (optional).
 
 ## install dependencies
 ```npm i```
