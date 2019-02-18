@@ -24,8 +24,8 @@ This demo uses images of version 6.6 for both ES and Kibana, but if you are usin
 ```npm run test:int```
 
 ## to access
-* ES: www://localhost:9200 
+* ES: http://localhost:9200 
 * See list of ElasticSearch indices: http://localhost:9200/_cat/indices?v
 * See data in an index named 'test-index': http://localhost:9200/test-index?pretty
-* Kibana: www://localhost:5601 
+* Kibana: http://localhost:5601 
 
