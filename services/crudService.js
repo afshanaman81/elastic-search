@@ -1,11 +1,7 @@
 const esClient = require('../clients/elasticsearchClient');
 const bulkUtils = require('../util/esBulkUtils');
 
-const {
-  ES_INDEX_NOT_FOUND,
-  ES_GENERAL_ERROR,
-  ES_NO_CONNECTION
-} = require('../errors/messages');
+const ElasticSearchError = require('../errors/esError');
 
 module.exports = {
   /** * INDEX OPERATIONS ** */
@@ -13,107 +9,119 @@ module.exports = {
     const index = { index: indexName };
     try {
       const response = await esClient.indices.create(index);
-      // console.log('TCL: createIndex response:\n', response);
       return response;
     } catch (err) {
-      // console.log(`createIndex Error:\n ${JSON.stringify(err, null, 2)}`);
-      const error = err.body ? err.body.error.type : ES_GENERAL_ERROR;
-      throw new Error(error);
+      console.log(`createIndex Error:\n ${JSON.stringify(err.body, null, 2)}`);
+      throw new ElasticSearchError(
+        'Invalid Index Name',
+        err.body.error,
+        err.body.status
+      );
     }
   },
   deleteIndex: async indexName => {
-    let response;
     const index = { index: indexName };
     try {
       const indexExists = await esClient.indices.exists(index);
-
-      if (indexExists) {
-        try {
-          response = await esClient.indices.delete(index);
-          return response;
-        } catch (err) {
-          throw new Error(ES_GENERAL_ERROR);
-        }
-      } else {
-        throw new Error(ES_INDEX_NOT_FOUND);
+      if (!indexExists) {
+        throw new ElasticSearchError('Index Not Found', {}, 404);
       }
+      const response = await esClient.indices.delete(index);
+      return response;
     } catch (err) {
-      //console.log(`deleteIndex Error:\n ${JSON.stringify(err, null, 2)}`);
-      const error = err.body ? err.body.error.type : err.message;
-      throw new Error(error);
+      if (err.name === 'ElasticSearchError') {
+        throw err;
+      } else {
+        console.log(`deleteIndex Error:\n ${JSON.stringify(err.body, null, 2)}`);
+
+        throw new ElasticSearchError(
+          'Invalid Index Name',
+          err.body.error,
+          err.body.status
+        );
+      }
     }
   },
   deleteAllIndices: async () => {
     try {
       const response = await esClient.indices.delete({ index: '_all' });
-      // console.log('TCL: deleteAllIndices response:\n', response);
       return response;
     } catch (err) {
-      // console.log(`deleteAllIndices Error:\n ${JSON.stringify(err, null, 2)}`);
-      const error = err.body ? err.body.error.type : ES_NO_CONNECTION;
-      throw new Error(error);
+      if (err.name === 'ElasticSearchError') {
+        throw err;
+      } else {
+        console.log(`deleteIndex Error:\n ${JSON.stringify(err.body, null, 2)}`);
+
+        throw new ElasticSearchError(
+          'Failed To Delete All Indices',
+          err.body.error,
+          err.body.status
+        );
+      }
     }
   },
 
   /** * DOCUMENT OPERATIONS ** */
   /** ADD */
-  // its the indexItem in v1
   addOrUpdateDocument: async (index, doc) => {
-    let success = false;
-    let results = false;
-
     const createParams = {
       index,
-      id: doc.guid,
+      id: doc.id,
       type: '_doc',
       body: doc
     };
 
     try {
       const response = await esClient.index(createParams);
-      // console.log('TCL: addDocument response:\n', response);
-      success = true;
-      results = response;
+      return response;
     } catch (err) {
-      console.log(`addDocument Error: ${JSON.stringify(err, null, 2)}`);
-      results = err;
-      // throw new Error('version_conflict_engine_exception');
-      // https://stackoverflow.com/questions/45466040/verify-that-an-exception-is-thrown-using-mocha-chai-and-async-await
-    }
+      console.log(`addDocument Error: ${JSON.stringify(err.body, null, 2)}`);
 
-    return { success, results };
+      throw new ElasticSearchError(
+        'Failed to Add or Update Document',
+        err.body.error,
+        err.body.status
+      );
+    }
   },
 
-  // its the indexItems in v1  > work on this
-  addDocumentsBulk: async (index, docArray) => {
-    let success = false;
-    let results = false;
+  addDocumentsBulk: async (index, docArray, strict = false) => {
     const action = 'index'; // possible actions are 'index', 'create', 'update', 'delete'
     const bulkActionsBody = await bulkUtils.bulkEditBody(
       index,
       action,
       docArray
     );
-    // console.log('TCL: bulkActionsBody:\n', bulkActionsBody);
+
     try {
       const response = await esClient.bulk({
         body: bulkActionsBody
       });
-      // console.log('TCL: addDocumentsBulk response:\n', response);
-      success = true;
-      results = response;
-    } catch (err) {
-      console.log(`addDocumentsBulk Error: ${JSON.stringify(err, null, 2)}`);
-      results = err;
-    }
 
-    return { success, results };
+      // https://stackoverflow.com/questions/37728650/nodejs-elasticsearch-bulk-api-error-handling
+      if (strict && response.errors) {
+        throw new ElasticSearchError('Failed To Index All Documents');
+      }
+      return response;
+    } catch (err) {
+      if (err.name === 'ElasticSearchError') {
+        throw err;
+      } else {
+        console.log(
+          `addDocumentsBulk Error:\n ${JSON.stringify(err.body, null, 2)}`
+        );
+
+        throw new ElasticSearchError(
+          'Unknown Error',
+          err.body.error,
+          err.body.status
+        );
+      }
+    }
   },
 
   /** * DELETE ** */
   deleteDocument: async (index, docId) => {
-    let success = false;
-    let results = false;
     const deleteParams = {
       index,
       id: docId,
@@ -122,34 +130,51 @@ module.exports = {
 
     try {
       const response = await esClient.delete(deleteParams);
-      // console.log('TCL: deleteDocument response:\n', response);
-      success = true;
-      results = response;
+      return response;
     } catch (err) {
-      success = false;
-      results = err;
-    }
+      console.log(`deleteDocument Error:\n ${JSON.stringify(err.body, null, 2)}`);
 
-    return { success, results };
+      if (
+        err.body.error &&
+        err.body.error.type === 'index_not_found_exception'
+      ) {
+        throw new ElasticSearchError(
+          'Index Not Found',
+          err.body.error,
+          err.body.status
+        );
+      } else if (err.body.result === 'not_found') {
+        throw new ElasticSearchError('Document Not Found', err.body.error, 404);
+      }
+    }
   },
 
-  // its the deleteItemsFromIndex in v1
-  deleteDocumentsBulk: async (index, docIds) => {
-    let success = false;
-    let results = false;
-    const bulkActionsBody = bulkUtils.bulkDeleteBody(index, docIds);
+  deleteDocumentsBulk: async (index, docIds, strict = false) => {
+    const bulkActionsBody = await bulkUtils.bulkDeleteBody(index, docIds);
 
     try {
       const response = await esClient.bulk({
         body: bulkActionsBody
       });
-      success = true;
-      results = response;
-    } catch (err) {
-      console.log(JSON.stringify(err, null, 2));
-      results = err;
-    }
 
-    return { success, results };
+      if (strict && response.errors) {
+        throw new ElasticSearchError('Failed To Delete All Documents');
+      }
+      return response;
+    } catch (err) {
+      if (err.body) {
+        console.log(
+          `deleteDocumentsBulk Error:\n ${JSON.stringify(err.body, null, 2)}`
+        );
+        throw new ElasticSearchError(
+          'Unknown Error',
+          err.body.error,
+          err.body.status
+        );
+      } else {
+        console.log(`deleteDocumentsBulk Error:\n ${JSON.stringify(err, null, 2)}`);
+        throw err;
+      }
+    }
   }
 };

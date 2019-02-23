@@ -2,16 +2,16 @@ module.exports = {
   bulkEditBody: (index, action, docArray) => {
     const bulkActionsArray = [];
     const type = '_doc';
-    const actionObject = {};
-    // TODO: use map instead of forEach
+
     docArray.forEach(document => {
-      if (!document.guid) {
-        const error = 'Document requires a guid attribute for indexing.';
+      const actionObject = {};
+      if (!document.id) {
+        const error = 'Document requires id attribute for indexing.';
         console.log(error);
         throw new Error(error);
       }
 
-      actionObject[action] = { _index: index, _type: type, _id: document.guid };
+      actionObject[action] = { _index: index, _type: type, _id: document.id };
       bulkActionsArray.push(actionObject);
       bulkActionsArray.push(document);
     });

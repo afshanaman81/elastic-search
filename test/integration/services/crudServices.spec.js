@@ -1,31 +1,24 @@
 const { expect } = require('chai');
 const sinon = require('sinon');
-const esCrudService = require('../../../services/crudServives');
-const esClient = require('../../../clients/elasticsearchClient');
+const esCrudService = require('../../../services/crudService');
 const bulkUtils = require('../../../util/esBulkUtils');
-const {
-  ES_INDEX_NOT_FOUND,
-  ES_GENERAL_ERROR
-} = require('../../../errors/messages');
+// TODO: use bulkUtils inst4ead of stubbbing it
 
 const sandbox = sinon.createSandbox();
 const indexName = 'es-test-index';
 
-describe.only('Integration: elasticSearch: crudServices', () => {
+describe('Integration: elasticSearch: crudServices', () => {
   describe('INDEX OPERATIONS', () => {
     describe('createIndex', () => {
-      beforeEach(async () => {
-        await esCrudService.deleteIndex(indexName);
-      });
       afterEach(async () => {
-        await esCrudService.deleteIndex(indexName);
+        try {
+          await esCrudService.deleteIndex(indexName);
+        } catch (err) {}
         sandbox.restore();
       });
 
       it('successfully creates an index when indexName is valid', async () => {
-        const { success, results } = await esCrudService.createIndex(indexName);
-
-        expect(success).to.be.equal(true);
+        const results = await esCrudService.createIndex(indexName);
 
         expect(results).to.be.an('object');
         expect(results)
@@ -36,45 +29,46 @@ describe.only('Integration: elasticSearch: crudServices', () => {
           .to.be.equal(indexName);
       });
 
-      it('gracefully fails to create an index when indexName is invalid', async () => {
+      it('throws error if Elasticsearch fails to create an index when indexName is invalid', async () => {
         const badIndexName = '-bad-index-name';
+        let error;
+        try {
+          await esCrudService.createIndex(badIndexName);
+        } catch (err) {
+          error = err;
+        }
 
-        const { success, results } = await esCrudService.createIndex(
-          badIndexName
-        );
-        expect(success).to.be.equal(false);
+        expect(error)
+          .to.have.property('name')
+          .to.be.a('string')
+          .to.be.equal('ElasticSearchError');
 
-        expect(results)
-          .to.have.property('body')
-          .to.be.an('object');
-        expect(results.body)
-          .to.have.property('error')
-          .to.be.an('object');
-        expect(results.body)
-          .to.have.property('status')
-          .to.be.equal(400);
-        expect(results.body.error)
+        expect(error)
           .to.have.property('type')
-          .to.be.equal('invalid_index_name_exception');
+          .to.be.a('string')
+          .to.be.equal('Invalid Index Name');
+
+        expect(error)
+          .to.have.property('httpCode')
+          .to.be.a('number')
+          .to.be.equal(400);
       });
     });
 
     describe('deleteIndex', () => {
       describe('deleteIndex: Success', () => {
         beforeEach(async () => {
-          await esCrudService.createIndex(indexName);
+          try {
+            await esCrudService.createIndex(indexName);
+          } catch (err) {}
         });
         afterEach(async () => {
-          await esCrudService.deleteIndex(indexName);
           sandbox.restore();
         });
 
         it('successfully deletes an index if it exists', async () => {
-          const { success, results } = await esCrudService.deleteIndex(
-            indexName
-          );
+          const results = await esCrudService.deleteIndex(indexName);
 
-          expect(success).to.be.equal(true);
           expect(results)
             .to.be.an('object')
             .to.have.property('acknowledged')
@@ -83,36 +77,39 @@ describe.only('Integration: elasticSearch: crudServices', () => {
       });
       describe('deleteIndex: Failure', () => {
         beforeEach(async () => {
-          await esCrudService.createIndex(indexName);
+          try {
+            await esCrudService.createIndex(indexName);
+          } catch (err) {}
         });
         afterEach(async () => {
+          try {
+            await esCrudService.deleteIndex(indexName);
+          } catch (err) {}
           sandbox.restore();
         });
-        it('gracefully fails to delete an index if it doesnt exist', async () => {
+        it('throws error if ElasticSearch fails to delete an index because it doesnt exist', async () => {
           const badIndexName = 'index-not-there';
-          const { success, results } = await esCrudService.deleteIndex(
-            badIndexName
-          );
+          let error;
+          try {
+            await esCrudService.deleteIndex(badIndexName);
+          } catch (err) {
+            error = err;
+          }
 
-          expect(success).to.be.equal(false);
-          expect(results).to.be.equal(ES_INDEX_NOT_FOUND);
-        });
+          expect(error)
+            .to.have.property('name')
+            .to.be.a('string')
+            .to.be.equal('ElasticSearchError');
 
-        it('gracefully exists if Elasticsearch fails to delete an index which exists', async () => {
-          // cause a failure in ElasticSearch method
-          const deleteIndexStub = sandbox
-            .stub(esClient.indices, 'delete')
-            .throws(ES_GENERAL_ERROR);
+          expect(error)
+            .to.have.property('type')
+            .to.be.a('string')
+            .to.be.equal('Index Not Found');
 
-          const { success, results } = await esCrudService.deleteIndex(
-            indexName
-          );
-
-          expect(success).to.be.equal(false);
-          expect(results).to.be.equal(ES_GENERAL_ERROR);
-          expect(deleteIndexStub.getCall(0).args[0]).to.eql({
-            index: indexName
-          });
+          expect(error)
+            .to.have.property('httpCode')
+            .to.be.a('number')
+            .to.be.equal(404);
         });
       });
     });
@@ -124,55 +121,34 @@ describe.only('Integration: elasticSearch: crudServices', () => {
         await esCrudService.createIndex('index-3');
       });
       afterEach(async () => {
-        await esCrudService.deleteAllIndices();
+        try {
+          await esCrudService.deleteAllIndices();
+        } catch (err) {}
         sandbox.restore();
       });
 
       it('successfully deletes all indices', async () => {
-        const { success, results } = await esCrudService.deleteAllIndices();
+        const results = await esCrudService.deleteAllIndices();
 
-        expect(success).to.be.equal(true);
         expect(results)
           .to.be.an('object')
           .to.have.property('acknowledged')
           .to.be.equal(true);
       });
-
-      it('gracefully exits if ElasticSearch fails to delete all indices', async () => {
-        // cause a failure in ElasticSearch method
-        const deleteIndexStub = sandbox
-          .stub(esClient.indices, 'delete')
-          .throws();
-
-        const { success } = await esCrudService.deleteAllIndices();
-
-        expect(success).to.be.equal(false);
-        expect(deleteIndexStub.getCall(0).args[0]).to.eql({ index: '_all' });
-
-        // to remove the stub, otherwise the afterEach wont work
-        sandbox.restore();
-      });
     });
   });
 
   describe('DOCUMENT OPERATIONS', () => {
-    describe('addOrUpdateDocument: new', () => {
-      beforeEach(async () => {
-        await esCrudService.deleteIndex(indexName);
-      });
+    describe('addOrUpdateDocument: new document case', () => {
       afterEach(async () => {
         await esCrudService.deleteIndex(indexName);
         sandbox.restore();
       });
 
       it('successfully creates a new document', async () => {
-        const doc = { title: 'Document 1 in index es-test-index', guid: 1 };
-        const { success, results } = await esCrudService.addOrUpdateDocument(
-          indexName,
-          doc
-        );
+        const doc = { title: 'Document 1 in index es-test-index', id: 1 };
+        const results = await esCrudService.addOrUpdateDocument(indexName, doc);
 
-        expect(success).to.equal(true);
         expect(results)
           .to.be.an('object')
           .to.have.property('result')
@@ -182,12 +158,12 @@ describe.only('Integration: elasticSearch: crudServices', () => {
           .to.be.equal(indexName);
         expect(results)
           .to.have.property('_id')
-          .to.be.equal(`${doc.guid}`);
+          .to.be.equal(`${doc.id}`);
       });
     });
 
-    describe('addOrUpdateDocument: update', () => {
-      const doc = { title: 'Document 1 in index es-test-index', guid: 1 };
+    describe('addOrUpdateDocument: update existing document case', () => {
+      const doc = { title: 'Document 1 in index es-test-index', id: 1 };
       beforeEach(async () => {
         await esCrudService.addOrUpdateDocument(indexName, doc);
       });
@@ -196,12 +172,7 @@ describe.only('Integration: elasticSearch: crudServices', () => {
         sandbox.restore();
       });
       it('updates document if it already exists', async () => {
-        const { success, results } = await esCrudService.addOrUpdateDocument(
-          indexName,
-          doc
-        );
-
-        expect(success).to.equal(true);
+        const results = await esCrudService.addOrUpdateDocument(indexName, doc);
 
         expect(results)
           .to.be.an('object')
@@ -212,28 +183,29 @@ describe.only('Integration: elasticSearch: crudServices', () => {
           .to.be.equal(indexName);
         expect(results)
           .to.have.property('_id')
-          .to.be.equal(`${doc.guid}`);
+          .to.be.equal(`${doc.id}`);
       });
     });
 
     describe('addDocumentsBulk', () => {
       afterEach(async () => {
-        await esCrudService.deleteIndex(indexName);
+        try {
+          await esCrudService.deleteIndex(indexName);
+        } catch (err) {}
         sandbox.restore();
       });
-      it('successfully creates multiple documents using bulk API', async () => {
+      it('Mode strict = false: returns results when creating multiple documents, even if some documents failed to create', async () => {
         const docArray = [
-          { title: 'Document 1 in index es-test-index', guid: 1 },
-          { title: 'Document 2 in index es-test-index', guid: 2 },
-          { title: 'Document 3 in index es-test-index', guid: 3 }
+          { title: 'Document 1 in index es-test-index', id: 1 },
+          { title: 'Document 2 in index es-test-index', id: 2 },
+          { title: 'Document 3 in index es-test-index', id: 3 }
         ];
 
-        const { success, results } = await esCrudService.addDocumentsBulk(
+        const results = await esCrudService.addDocumentsBulk(
           indexName,
           docArray
         );
 
-        expect(success).to.equal(true);
         expect(results)
           .to.have.property('errors')
           .to.be.equal(false);
@@ -242,79 +214,135 @@ describe.only('Integration: elasticSearch: crudServices', () => {
           .to.be.an('array')
           .to.have.length(docArray.length);
       });
+    });
 
-      it('gracefully exits if ElasticSearch fails to create documents in bulk', async () => {
-        const action = 'index';
-        const docArray = [
-          { title: 'Document 1 in index es-test-index', guid: 1 },
-          { title: 'Document 2 in index es-test-index', guid: 2 },
-          { title: 'Document 3 in index es-test-index', guid: 3 }
-        ];
+    describe('deleteDocument', () => {
+      describe('deleteDocument: Success', () => {
+        const doc = { title: 'Document 100 in index es-test-index', id: 100 };
 
-        const bulkActionsBody = [
-          { index: { _index: 'es-test-index', _type: '_doc', _id: 3 } },
-          { title: 'Document 1 in index es-test-index', guid: 1 },
-          { index: { _index: 'es-test-index', _type: '_doc', _id: 3 } },
-          { title: 'Document 2 in index es-test-index', guid: 2 },
-          { index: { _index: 'es-test-index', _type: '_doc', _id: 3 } },
-          { title: 'Document 3 in index es-test-index', guid: 3 }
-        ];
+        beforeEach(async () => {
+          await esCrudService.addOrUpdateDocument(indexName, doc);
+        });
+        afterEach(async () => {
+          await esCrudService.deleteIndex(indexName);
+          sandbox.restore();
+        });
+        it('successfully deletes a document from an index given document id', async () => {
+          const docId = doc.id;
+          const results = await esCrudService.deleteDocument(indexName, docId);
 
-        const bulkEditBodyStub = sandbox
-          .stub(bulkUtils, 'bulkEditBody')
-          .resolves(bulkActionsBody);
+          expect(results)
+            .to.be.an('object')
+            .to.have.property('result')
+            .to.be.equal('deleted');
+          expect(results)
+            .to.have.property('_index')
+            .to.be.equal(indexName);
+          expect(results)
+            .to.have.property('_id')
+            .to.be.equal(`${docId}`);
+        });
+      });
 
-        const addDocumentsBulkStub = sandbox
-          .stub(esClient, 'bulk')
-          .throws();
+      describe('deleteDocument: Failure', () => {
+        describe('deleteDocument: when index is not found', () => {
+          afterEach(async () => {
+            sandbox.restore();
+          });
+          it('throws error if fails to delete a document when index doesnt exist', async () => {
+            const docId = 100;
+            let error;
+            try {
+              await esCrudService.deleteDocument(indexName, docId);
+            } catch (err) {
+              error = err;
+            }
 
-        const { success } = await esCrudService.addDocumentsBulk(
-          indexName,
-          docArray
-        );
-        expect(success).to.equal(false);
-        expect(bulkEditBodyStub.getCall(0).args[0]).to.eql(
-          indexName,
-          action,
-          docArray
-        );
-        expect(addDocumentsBulkStub.getCall(0).args[0]).to.eql({
-          body: bulkActionsBody
+            expect(error)
+              .to.have.property('name')
+              .to.be.a('string')
+              .to.be.equal('ElasticSearchError');
+
+            expect(error)
+              .to.have.property('type')
+              .to.be.a('string')
+              .to.be.equal('Index Not Found');
+
+            expect(error)
+              .to.have.property('httpCode')
+              .to.be.a('number')
+              .to.be.equal(404);
+          });
+        });
+
+        describe('deleteDocument: when document is not found', () => {
+          beforeEach(async () => {
+            await esCrudService.createIndex(indexName);
+          });
+          afterEach(async () => {
+            await esCrudService.deleteIndex(indexName);
+            sandbox.restore();
+          });
+          it('throws error if fails to delete a document when document doesnt exist', async () => {
+            const docId = 100;
+            let error;
+            try {
+              await esCrudService.deleteDocument(indexName, docId);
+            } catch (err) {
+              error = err;
+            }
+
+            expect(error)
+              .to.have.property('name')
+              .to.be.a('string')
+              .to.be.equal('ElasticSearchError');
+
+            expect(error)
+              .to.have.property('type')
+              .to.be.a('string')
+              .to.be.equal('Document Not Found');
+
+            expect(error)
+              .to.have.property('httpCode')
+              .to.be.a('number')
+              .to.be.equal(404);
+          });
         });
       });
     });
 
-    describe('deleteDocument', () => {
-      const doc = { title: 'Document 100 in index es-test-index', guid: 100 };
+    describe('deleteDocumentsBulk', () => {
+      describe('deleteDocumentsBulk: Success', () => {
+        const docArray = [
+          { title: 'Document 1 in index es-test-index', id: 1 },
+          { title: 'Document 2 in index es-test-index', id: 2 },
+          { title: 'Document 3 in index es-test-index', id: 3 }
+        ];
 
-      beforeEach(async () => {
-        await esCrudService.addOrUpdateDocument(indexName, doc);
-      });
-      afterEach(async () => {
-        await esCrudService.deleteIndex(indexName);
-        sandbox.restore();
-      });
-      it('successfully deletes a document from an index given document id', async () => {
-        const docId = doc.guid;
-        const { success, results } = await esCrudService.deleteDocument(
-          indexName,
-          docId
-        );
+        beforeEach(async () => {
+          await esCrudService.addDocumentsBulk(indexName, docArray);
+        });
+        afterEach(async () => {
+          await esCrudService.deleteIndex(indexName);
+          sandbox.restore();
+        });
+        it('successfully deletes all documents in bulk', async () => {
+          const docIds = [docArray[0].id, docArray[1].id, docArray[2].id];
+          const results = await esCrudService.deleteDocumentsBulk(
+            indexName,
+            docIds
+          );
 
-        expect(success).to.equal(true);
-        expect(results)
-          .to.be.an('object')
-          .to.have.property('result')
-          .to.be.equal('deleted');
-        expect(results)
-          .to.have.property('_index')
-          .to.be.equal(indexName);
-        expect(results)
-          .to.have.property('_id')
-          .to.be.equal(`${docId}`);
+          expect(results)
+            .to.be.an('object')
+            .to.have.property('errors')
+            .to.be.equal(false);
+          expect(results)
+            .to.have.property('items')
+            .to.be.an('array')
+            .to.have.length(docArray.length);
+        });
       });
     });
-
-    describe('deleteDocumentsBulk', () => {});
   });
 });
