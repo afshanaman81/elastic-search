@@ -8,7 +8,6 @@ const fs = require('fs');
 /** Index */
 router.put('/index', async (req, res) => {
   // todo: validate input
-  console.log(req.query.indexName);
   const response = await indexController.createIndex(req.query.indexName);
   res.json(response);
 });
@@ -32,7 +31,6 @@ router.put('/document/bulk', async (req, res) => {
     fs.readFileSync('./data/marvel_movies.json', 'utf8')
   );
   const docArray = jsonData.movies;
-  //console.log(docArray);
   const response = await documentService.addDocumentsBulk('movies', docArray);
   res.json(response);
 });
@@ -42,7 +40,13 @@ router.get('/search/auto-complete/:term/:size', async (req, res) => {
   const term = req.params.term;
   const size = req.params.size;
   const results = await searchController.completionSuggester(term, size);
-  res.json({ message: 'Welcome to the search service' });
+  res.json(results);
+});
+
+router.get('/search/movie/:id', async (req, res) => {
+  const movieId = req.params.id;
+  const result = await searchController.searchById(movieId);
+  res.json(result);
 });
 
 module.exports = router;

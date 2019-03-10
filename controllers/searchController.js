@@ -20,14 +20,11 @@ exports.searchById = async id => {
 };
 
 // autocomplete or Search as you type, or Type Ahead Search
-// https://hackernoon.com/elasticsearch-building-autocomplete-functionality-494fcf81a7cf
-
 exports.prefixQueryAutoCompleter = async prefix => {};
 
 exports.edgeNgramFiltering = async param => {};
 
 exports.completionSuggester = async (term, size) => {
-  //https://www.manifold.co/blog/leveraging-the-power-of-elasticsearch-autocomplete-and-fuzzy-search-1d491d3e0b38
   const searchParams = {
     index: INDEX_NAME,
     type: INDEX_TYPE,
@@ -58,7 +55,7 @@ exports.completionSuggester = async (term, size) => {
   };
   try {
     const results = await esClient.search(searchParams);
-    console.log('results \n', results.suggest.titleSuggester);
+    //console.log('results \n', results.suggest.titleSuggester);
     return results;
   } catch (err) {
     return err.message;

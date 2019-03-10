@@ -4,7 +4,7 @@ const indexService = require('../services/clusterService');
 exports.createIndex = async indexName => {
   try {
     const response = await indexService.createIndex(indexName);
-    console.log('createIndex response: ', response);
+    //console.log('createIndex response: ', response);
     return `Index '${indexName}' successfully created`;
   } catch (err) {
     let errorMessage;
@@ -37,7 +37,9 @@ exports.createMapping = async indexName => {
   // read on 'index: not_analyzed', 'include_in_all: false', 'index: no' etc
   const mapping = {
     properties: {
-      title: {
+      title: { type: 'text' },
+      phase: { type: 'text' },
+      titleSuggest: {
         type: 'completion', // will be used in auto-complete suggestions
         analyzer: 'simple',
         search_analyzer: 'simple'
@@ -47,9 +49,9 @@ exports.createMapping = async indexName => {
         analyzer: 'simple',
         search_analyzer: 'simple'
       },
-      category_name: { type: 'keyword'},  // type=keyword means not analyzed
-      rating_name: { type: 'keyword'},
-      budget: { type: 'keyword'},         // we do not want ES to look inside the value, for example for '000'
+      category_name: { type: 'keyword' }, // type=keyword means exact matches only
+      rating_name: { type: 'keyword' },
+      budget: { type: 'keyword' }, // we do not want ES to look inside the value, for example for '000'
       release_year: {
         type: 'date',
         format: 'yyyy||epoch_millis'
@@ -60,7 +62,7 @@ exports.createMapping = async indexName => {
 
   try {
     const response = await indexService.createMapping(indexName, mapping);
-    console.log('createMapping response: ', response);
+    //console.log('createMapping response: ', response);
     return `Mapping successfully created on index '${indexName}'`;
   } catch (err) {
     return err.message.reason;

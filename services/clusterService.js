@@ -70,7 +70,7 @@ module.exports = {
     };
     try {
       const response = await esClient.indices.putMapping(mappingParams);
-      console.log(response);
+      //console.log(response);
       return response;
     } catch (err) {
       console.log(
