@@ -9,7 +9,7 @@ Using Postman:
 - create mapping on the 'movies' index: POST ('elastic/mapping')
     - creating mapping is optional, for ES automatically creates dynamic mapping when the first document is indexed
 
-- create and populate 'movies' index with Json data: ```PUT ('elastic/bulk')```
+- create and populate 'movies' index with Json data: ```PUT ('elastic/document/bulk')```
 
 - search ...
 

@@ -3,9 +3,17 @@ const express = require('express');
 const validator = require('joi');
 const helmet = require('helmet');
 const bodyParser = require('body-parser');
+const path = require('path');
 
 const PORT = process.env.PORT;
 const app = express();
+
+// VIEW ENGINE SETUP
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'pug');
+
+// STATIC FOLDER SETUP
+app.use(express.static(path.join(__dirname, 'public')));
 
 // MIDDLEWARE
 
@@ -34,5 +42,5 @@ app.listen(PORT, () => {
     ES URL: ${process.env.ES_URL}`);
 });
 
-// EXPORT THE APP FOR TESTING                       ----------------------------------
+// EXPORT THE APP FOR TESTING
 module.exports = app;

@@ -1,6 +1,5 @@
 const router = require('express').Router();
 const indexController = require('../controllers/clusterController');
-const indexService = require('../services/clusterService');
 const documentController = require('../controllers/dataController');
 const documentService = require('../services/dataService'); // remove it when I decide what to do with controllers and services
 const searchController = require('../controllers/searchController');
@@ -28,7 +27,7 @@ router.put('/mapping', async (req, res) => {
 /** Populate */
 router.put('/document', async (req, res) => {});
 
-router.put('/bulk', async (req, res) => {
+router.put('/document/bulk', async (req, res) => {
   const jsonData = JSON.parse(
     fs.readFileSync('./data/marvel_movies.json', 'utf8')
   );
@@ -39,7 +38,10 @@ router.put('/bulk', async (req, res) => {
 });
 
 /** Search */
-router.get('/search', (req, res) => {
+router.get('/search/auto-complete/:term/:size', async (req, res) => {
+  const term = req.params.term;
+  const size = req.params.size;
+  const results = await searchController.completionSuggester(term, size);
   res.json({ message: 'Welcome to the search service' });
 });
 

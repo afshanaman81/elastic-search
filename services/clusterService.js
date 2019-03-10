@@ -76,6 +76,12 @@ module.exports = {
       console.log(
         `createMapping Error:\n ${JSON.stringify(err.body, null, 2)}`
       );
+
+      throw new ElasticSearchError(
+        'Invalid Mapping Argument',
+        err.body.error,
+        err.body.status
+      );
     }
   }
 };

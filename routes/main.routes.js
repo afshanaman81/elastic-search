@@ -1,7 +1,8 @@
 const router = require('express').Router();
+const path = require('path');
 
 router.get('/', (req, res) => {
-  res.json({ message: 'Welcome to the ElasticSearch Demo App' });
+  res.render(path.join(__dirname,"../views/index.pug"))
 });
 
 module.exports = router;
