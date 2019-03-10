@@ -1,9 +1,8 @@
 const esClient = require('../clients/elasticsearchClient');
 const ElasticSearchError = require('../errors/esError');
 
-  /** * INDEX OPERATIONS ** */
+/** * INDEX OPERATIONS ** */
 module.exports = {
-
   createIndex: async indexName => {
     const index = { index: indexName };
     try {
@@ -63,11 +62,15 @@ module.exports = {
       }
     }
   },
-  createMapping: async (indexName, typeName, mapping) => {
-    const mappingParams = { index: indexName, type: typeName, body: mapping };
+  createMapping: async (indexName, mapping) => {
+    const mappingParams = {
+      index: indexName,
+      type: '_doc',
+      body: mapping
+    };
     try {
       const response = await esClient.indices.putMapping(mappingParams);
-      //console.log(response);
+      console.log(response);
       return response;
     } catch (err) {
       console.log(
