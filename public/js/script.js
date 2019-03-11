@@ -27,9 +27,9 @@ jQuery(document).ready(function($){
 function suggestion(text, size){
    $.getJSON(`/elastic/search/auto-complete/${text}/${size}`)
        .done(function(data){
-           console.log(data)
-           var title = data.suggest.titleSuggester[0].options;
-           var phase = data.suggest.phaseSuggester[0].options;
+           //console.log(data)
+           const title = data.suggest.titleSuggester[0].options;
+           const phase = data.suggest.phaseSuggester[0].options;
            $('.autocomplete a').each(function(){
                $(this).remove();
            });
@@ -45,10 +45,20 @@ function stat(id){
    $.getJSON(`/elastic/search/movie/${id}`)
        .done(function(data){
            $.each(data.hits.hits, function(index, value){
-               console.log(value)
-               var details = value._source;
-               var retired = value._source.retired ? "Yes" : "No";
-               $('.result').html('<div class="player"><p>Title: <span class="bold">'+details.title+ ' ' + details.Phase+'</span></p><p>Position: <span class="bold">'+details.position+'</span></p><p>Date of First International Match: <span class="bold">'+details.firstMatch+'</span></p><p>Height: <span class="bold">'+details.height+'</span></p><p>Age: <span class="bold">'+details.age+'</span></p><p>Country of Birth: <span class="bold">'+details.country+'</span></p><p>Residential Address: <span class="bold">'+details.address+'</span></p><p>Eye Color: <span class="bold">'+details.eyeColor+'</span></p><p>Retired?: <span class="bold">'+retired+'</span></p></div>')
+               //console.log(value)
+               const details = value._source;
+               
+               $('.result').html(`             
+               <div class="movie">
+                    <h2><u>Movie Details</u></h2>
+                    <p>Title:           <span class="bold">${details.title}</span></p>
+                    <p>Phase:           <span class="bold">${details.phase}</span></p>
+                    <p>Category:        <span class="bold">${details.category_name}</span></p>
+                    <p>Rating:          <span class="bold">${details.rating_name}</span></p>
+                    <p>Release Date:    <span class="bold">${details.release_date}</span></p>   
+                    <p>Format:          <span class="bold">${details.aspect_ratio_name} in ${details.viewing_format_name}</span></p>
+                </div>
+               `)
            })
        });
 }

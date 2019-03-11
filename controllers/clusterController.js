@@ -37,9 +37,7 @@ exports.createMapping = async indexName => {
   // read on 'index: not_analyzed', 'include_in_all: false', 'index: no' etc
   const mapping = {
     properties: {
-      title: { type: 'text' },
-      phase: { type: 'text' },
-      titleSuggest: {
+      title: {
         type: 'completion', // will be used in auto-complete suggestions
         analyzer: 'simple',
         search_analyzer: 'simple'

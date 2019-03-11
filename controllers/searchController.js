@@ -20,11 +20,7 @@ exports.searchById = async id => {
 };
 
 // autocomplete or Search as you type, or Type Ahead Search
-exports.prefixQueryAutoCompleter = async prefix => {};
-
-exports.edgeNgramFiltering = async param => {};
-
-exports.completionSuggester = async (term, size) => {
+exports.prefixAutoCompleter = async (term, size) => {
   const searchParams = {
     index: INDEX_NAME,
     type: INDEX_TYPE,
@@ -61,3 +57,7 @@ exports.completionSuggester = async (term, size) => {
     return err.message;
   }
 };
+
+exports.edgeNgramFiltering = async someParam => {};
+
+exports.completionSuggester = async someParams => {};

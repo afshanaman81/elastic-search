@@ -78,21 +78,21 @@ body{
 .result{
    margin-top: 4rem;
 }
-.player{
+.movie{
    background-color: #ffffff;
    padding: 3rem 2rem;
    display: block;
    box-shadow: 0 0 3px rgba(0,0,0,0.3);
 }
-.player *{
+.movie *{
    padding: 0.5rem 0;
 }
-.player h2, .player p{
+.movie h2, .movie p{
    font-weight: 300;
 }
-.player h2{
+.movie h2{
    font-size: 2.2rem;
 }
-.player p{
+.movie p{
    font-size: 1.6rem;
 }
