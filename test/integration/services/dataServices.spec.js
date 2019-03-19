@@ -1,7 +1,7 @@
 const { expect } = require('chai');
 const sinon = require('sinon');
 const dataService = require('../../../services/dataService');
-const clusterService = require('../../../services/clusterService');
+const indexService = require('../../../services/indexService');
 const bulkUtils = require('../../../util/esBulkUtils');
 // TODO: use bulkUtils inst4ead of stubbbing it
 
@@ -12,7 +12,7 @@ describe('Integration: elasticSearch: Document CRUD Services', () => {
   describe('DOCUMENT OPERATIONS', () => {
     describe('addOrUpdateDocument: new document case', () => {
       afterEach(async () => {
-        await clusterService.deleteIndex(indexName);
+        await indexService.deleteIndex(indexName);
         sandbox.restore();
       });
 
@@ -39,7 +39,7 @@ describe('Integration: elasticSearch: Document CRUD Services', () => {
         await dataService.addOrUpdateDocument(indexName, doc);
       });
       afterEach(async () => {
-        await clusterService.deleteIndex(indexName);
+        await indexService.deleteIndex(indexName);
         sandbox.restore();
       });
       it('updates document if it already exists', async () => {
@@ -61,7 +61,7 @@ describe('Integration: elasticSearch: Document CRUD Services', () => {
     describe('addDocumentsBulk', () => {
       afterEach(async () => {
         try {
-          await clusterService.deleteIndex(indexName);
+          await indexService.deleteIndex(indexName);
         } catch (err) {}
         sandbox.restore();
       });
@@ -92,7 +92,7 @@ describe('Integration: elasticSearch: Document CRUD Services', () => {
           await dataService.addOrUpdateDocument(indexName, doc);
         });
         afterEach(async () => {
-          await clusterService.deleteIndex(indexName);
+          await indexService.deleteIndex(indexName);
           sandbox.restore();
         });
         it('successfully deletes a document from an index given document id', async () => {
@@ -145,10 +145,10 @@ describe('Integration: elasticSearch: Document CRUD Services', () => {
 
         describe('deleteDocument: when document is not found', () => {
           beforeEach(async () => {
-            await clusterService.createIndex(indexName);
+            await indexService.createIndex(indexName);
           });
           afterEach(async () => {
-            await clusterService.deleteIndex(indexName);
+            await indexService.deleteIndex(indexName);
             sandbox.restore();
           });
           it('throws error if fails to delete a document when document doesnt exist', async () => {
@@ -191,7 +191,7 @@ describe('Integration: elasticSearch: Document CRUD Services', () => {
           await dataService.addDocumentsBulk(indexName, docArray);
         });
         afterEach(async () => {
-          await clusterService.deleteIndex(indexName);
+          await indexService.deleteIndex(indexName);
           sandbox.restore();
         });
         it('successfully deletes all documents in bulk', async () => {

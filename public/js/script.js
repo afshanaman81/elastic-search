@@ -34,10 +34,18 @@ function suggestion(text, size){
                $(this).remove();
            });
            $.each(title, function(index, value){
-               $('.autocomplete').append('<a class="option" href="#" data-id="'+value._id+'" data-name="'+value._source.title+' '+value._source.phase+'"><span class="bold">'+ value._source.title +'</span> '+ value._source.phase +'</a>')
+               $('.autocomplete').append(`
+                <a class="option" href="#" data-id="${value._id}" data-name="${value._source.title} ${value._source.phase}">
+                    <span class="bold">${value._source.title}</span> ${value._source.phase}
+                </a>`
+               )
            });
            $.each(phase, function(index, value){
-               $('.autocomplete').append('<a class="option" href="#" data-id="'+value._id+'" data-name="'+value._source.title+' '+value._source.phase+'">'+value._source.title +' <span class="bold">'+ value._source.phase +'</span></a>')
+               $('.autocomplete').append(`
+                <a class="option" href="#" data-id="${value._id}" data-name="${value._source.title} ${value._source.phase}">
+                    ${value._source.title} <span class="bold">${value._source.phase}</span>
+                </a>`
+               )
            });
        });
 }
@@ -49,15 +57,15 @@ function stat(id){
                const details = value._source;
                
                $('.result').html(`             
-               <div class="movie">
-                    <h2><u>Movie Details</u></h2>
-                    <p>Title:           <span class="bold">${details.title}</span></p>
-                    <p>Phase:           <span class="bold">${details.phase}</span></p>
-                    <p>Category:        <span class="bold">${details.category_name}</span></p>
-                    <p>Rating:          <span class="bold">${details.rating_name}</span></p>
-                    <p>Release Date:    <span class="bold">${details.release_date}</span></p>   
-                    <p>Format:          <span class="bold">${details.aspect_ratio_name} in ${details.viewing_format_name}</span></p>
-                </div>
+                    <div class="movie">
+                        <h2><u>Movie Details</u></h2>
+                        <p>Title:           <span class="bold">${details.title}</span></p>
+                        <p>Phase:           <span class="bold">${details.phase}</span></p>
+                        <p>Category:        <span class="bold">${details.category_name}</span></p>
+                        <p>Rating:          <span class="bold">${details.rating_name}</span></p>
+                        <p>Release Date:    <span class="bold">${details.release_date}</span></p>   
+                        <p>Format:          <span class="bold">${details.aspect_ratio_name} in ${details.viewing_format_name}</span></p>
+                    </div>
                `)
            })
        });

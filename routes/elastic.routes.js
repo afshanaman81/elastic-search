@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const indexController = require('../controllers/clusterController');
+const indexController = require('../controllers/indexController');
 const documentController = require('../controllers/dataController');
 const searchController = require('../controllers/searchController');
 

@@ -1,6 +1,6 @@
 const { expect } = require('chai');
 const sinon = require('sinon');
-const clusterService = require('../../../services/clusterService');
+const indexService = require('../../../services/indexService');
 const esClient = require('../../../clients/elasticsearchClient');
 const ElasticSearchError = require('../../../errors/esError');
 
@@ -24,7 +24,7 @@ describe('elasticSearch: Index CRUD Services', () => {
           .stub(esClient.indices, 'create')
           .resolves(esCreateIndexResponse);
 
-        const results = await clusterService.createIndex(indexName);
+        const results = await indexService.createIndex(indexName);
 
         expect(results).to.be.an('object');
         expect(results)
@@ -55,7 +55,7 @@ describe('elasticSearch: Index CRUD Services', () => {
 
         let error;
         try {
-          await clusterService.createIndex(badIndexName);
+          await indexService.createIndex(badIndexName);
         } catch (err) {
           error = err;
         }
@@ -92,7 +92,7 @@ describe('elasticSearch: Index CRUD Services', () => {
           .stub(esClient.indices, 'delete')
           .resolves(esDeleteIndexResponse);
 
-        const results = await clusterService.deleteIndex(indexName);
+        const results = await indexService.deleteIndex(indexName);
 
         expect(results)
           .to.be.an('object')
@@ -110,7 +110,7 @@ describe('elasticSearch: Index CRUD Services', () => {
 
         let error;
         try {
-          await clusterService.deleteIndex(badIndexName);
+          await indexService.deleteIndex(badIndexName);
         } catch (err) {
           error = err;
         }
@@ -143,7 +143,7 @@ describe('elasticSearch: Index CRUD Services', () => {
           .stub(esClient.indices, 'delete')
           .resolves(esDeleteAllIndicesResponse);
 
-        const results = await clusterService.deleteAllIndices();
+        const results = await indexService.deleteAllIndices();
 
         expect(results)
           .to.be.an('object')
@@ -159,7 +159,7 @@ describe('elasticSearch: Index CRUD Services', () => {
 
         let error;
         try {
-          await clusterService.deleteAllIndices();
+          await indexService.deleteAllIndices();
         } catch (err) {
           error = err;
         }

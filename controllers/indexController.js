@@ -1,4 +1,4 @@
-const indexService = require('../services/clusterService');
+const indexService = require('../services/indexService');
 
 // Index CRUD Operations
 exports.createIndex = async indexName => {

@@ -1,6 +1,6 @@
 const { expect } = require('chai');
 const sinon = require('sinon');
-const clusterService = require('../../../services/clusterService');
+const indexService = require('../../../services/indexService');
 
 const sandbox = sinon.createSandbox();
 const indexName = 'es-test-index';
@@ -10,13 +10,13 @@ describe('Integration: elasticSearch: Index CRUD Services', () => {
     describe('createIndex', () => {
       afterEach(async () => {
         try {
-          await clusterService.deleteIndex(indexName);
+          await indexService.deleteIndex(indexName);
         } catch (err) {}
         sandbox.restore();
       });
 
       it('successfully creates an index when indexName is valid', async () => {
-        const results = await clusterService.createIndex(indexName);
+        const results = await indexService.createIndex(indexName);
 
         expect(results).to.be.an('object');
         expect(results)
@@ -31,7 +31,7 @@ describe('Integration: elasticSearch: Index CRUD Services', () => {
         const badIndexName = '-bad-index-name';
         let error;
         try {
-          await clusterService.createIndex(badIndexName);
+          await indexService.createIndex(badIndexName);
         } catch (err) {
           error = err;
         }
@@ -57,7 +57,7 @@ describe('Integration: elasticSearch: Index CRUD Services', () => {
       describe('deleteIndex: Success', () => {
         beforeEach(async () => {
           try {
-            await clusterService.createIndex(indexName);
+            await indexService.createIndex(indexName);
           } catch (err) {}
         });
         afterEach(async () => {
@@ -65,7 +65,7 @@ describe('Integration: elasticSearch: Index CRUD Services', () => {
         });
 
         it('successfully deletes an index if it exists', async () => {
-          const results = await clusterService.deleteIndex(indexName);
+          const results = await indexService.deleteIndex(indexName);
 
           expect(results)
             .to.be.an('object')
@@ -76,12 +76,12 @@ describe('Integration: elasticSearch: Index CRUD Services', () => {
       describe('deleteIndex: Failure', () => {
         beforeEach(async () => {
           try {
-            await clusterService.createIndex(indexName);
+            await indexService.createIndex(indexName);
           } catch (err) {}
         });
         afterEach(async () => {
           try {
-            await clusterService.deleteIndex(indexName);
+            await indexService.deleteIndex(indexName);
           } catch (err) {}
           sandbox.restore();
         });
@@ -89,7 +89,7 @@ describe('Integration: elasticSearch: Index CRUD Services', () => {
           const badIndexName = 'index-not-there';
           let error;
           try {
-            await clusterService.deleteIndex(badIndexName);
+            await indexService.deleteIndex(badIndexName);
           } catch (err) {
             error = err;
           }
@@ -114,19 +114,19 @@ describe('Integration: elasticSearch: Index CRUD Services', () => {
 
     describe('deleteAllIndices', () => {
       beforeEach(async () => {
-        await clusterService.createIndex('index-1');
-        await clusterService.createIndex('index-2');
-        await clusterService.createIndex('index-3');
+        await indexService.createIndex('index-1');
+        await indexService.createIndex('index-2');
+        await indexService.createIndex('index-3');
       });
       afterEach(async () => {
         try {
-          await clusterService.deleteAllIndices();
+          await indexService.deleteAllIndices();
         } catch (err) {}
         sandbox.restore();
       });
 
       it('successfully deletes all indices', async () => {
-        const results = await clusterService.deleteAllIndices();
+        const results = await indexService.deleteAllIndices();
 
         expect(results)
           .to.be.an('object')
