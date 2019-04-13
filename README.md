@@ -63,7 +63,7 @@ Using Postman:
 ```npm run test:int```
 
 ## to access
-Using local browser
+Using browser
 * ES: http://localhost:9200 
 * See list of ElasticSearch indices: http://localhost:9200/_cat/indices?v
 * See data in an index named 'test-index': http://localhost:9200/test-index?pretty
