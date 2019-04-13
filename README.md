@@ -21,7 +21,7 @@ Using Postman:
     - creating mapping is optional in most cases for simple searches, since ES automatically creates dynamic mapping when the first document is indexed
     - but in case of auto-complete functionality, we must create the appropriate mapping on the index
 
-- create and populate 'movies' index with Json data: ```PUT ('localhost:3000/elastic/document/bulk')```
+- populate 'movies' index with Json data: ```PUT ('localhost:3000/elastic/document/bulk?indexName=movies')```
 
 ## run the node server
 ```npm start```
