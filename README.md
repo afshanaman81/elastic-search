@@ -15,9 +15,9 @@ make a copy of the env.example file and save it as .env
 
 ## populate ElasticSearch index
 Using Postman:
-- create index: ```PUT ('localhost:3000/elastic/index?indexName=movies')```
+- create index: <br>`PUT ('localhost:3000/elastic/index?indexName=movies')`
 
-- create mapping on the 'movies' index: ```PUT ('localhost:3000/elastic/mapping?indexName=movies')```
+- create mapping on the 'movies' index: <br>`PUT ('localhost:3000/elastic/mapping?indexName=movies')`
     - creating mapping is optional in most cases for simple searches, since ES automatically creates dynamic mapping when the first document is indexed
     - but in case of auto-complete functionality, we must create the appropriate mapping on the index
 
@@ -46,7 +46,7 @@ Using Postman:
     }
     ```
 
-- populate 'movies' index with Json data: ```PUT ('localhost:3000/elastic/document/bulk?indexName=movies')```
+- populate 'movies' index with Json data: <br> `PUT ('localhost:3000/elastic/document/bulk?indexName=movies')`
 
 ## run the node server
 ```npm start```
