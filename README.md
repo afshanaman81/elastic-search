@@ -21,6 +21,31 @@ Using Postman:
     - creating mapping is optional in most cases for simple searches, since ES automatically creates dynamic mapping when the first document is indexed
     - but in case of auto-complete functionality, we must create the appropriate mapping on the index
 
+    ```
+    const mapping = {
+        properties: {
+            title: {
+                type: 'completion', // will be used in auto-complete suggestions
+                analyzer: 'simple',
+                search_analyzer: 'simple'
+            },
+            phase: {
+                type: 'completion',
+                analyzer: 'simple',
+                search_analyzer: 'simple'
+            },
+            category_name: { type: 'keyword' }, // type=keyword means exact matches only
+            rating_name: { type: 'keyword' },
+            budget: { type: 'keyword' }, // we do not want ES to look inside the value, for example for '000'
+            release_year: {
+                type: 'date',
+                format: 'yyyy||epoch_millis'
+            },
+            release_date: { type: 'date', format: 'MMM dd, yyyy||epoch_millis' }
+        }
+    }
+    ```
+
 - populate 'movies' index with Json data: ```PUT ('localhost:3000/elastic/document/bulk?indexName=movies')```
 
 ## run the node server
