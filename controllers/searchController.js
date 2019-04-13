@@ -58,6 +58,8 @@ exports.prefixAutoCompleter = async (term, size) => {
   }
 };
 
+// todo
 exports.edgeNgramFiltering = async someParam => {};
 
+// todo
 exports.completionSuggester = async someParams => {};

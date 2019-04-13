@@ -26,7 +26,7 @@ router.put('/mapping', async (req, res) => {
 router.put('/document', async (req, res) => {});
 
 router.put('/document/bulk', async (req, res) => {
-  const response = documentController.populateIndex();
+  const response = await documentController.populateIndex(req.query.indexName);
   res.json(response);
 });
 

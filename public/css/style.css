@@ -18,7 +18,7 @@ body{
    margin: 0 auto 4rem;
    color: #ffffff;
    text-align: center;
-   font-size: 4rem;
+   font-size: 3rem;
    background-color: #16a085;
    text-transform: capitalize;
    font-weight: 400;
@@ -38,7 +38,7 @@ body{
    padding: 2rem 1rem;
    font-weight: 300;
    border: none;
-   font-size: 3rem;
+   font-size: 2rem;
    box-shadow: 0 0 3px rgba(0,0,0,0.3);
    display: inline-block;
 }
@@ -47,7 +47,7 @@ body{
    margin-left: 3%;
    background-color: #16a085;
    color: #ffffff;
-   font-size: 3rem;
+   font-size: 2rem;
    border: none;
    padding: 2rem 1rem;
    font-weight: 300;

@@ -5,7 +5,7 @@ exports.createIndex = async indexName => {
   try {
     const response = await indexService.createIndex(indexName);
     //console.log('createIndex response: ', response);
-    return `Index '${indexName}' successfully created`;
+    return `Successfully created Index '${indexName}'`;
   } catch (err) {
     let errorMessage;
     if (err.message == 'invalid_index_name_exception')
@@ -21,10 +21,10 @@ exports.deleteIndex = async indexName => {
   try {
     if (indexName) {
       await indexService.deleteIndex(indexName);
-      return `Index '${indexName}' successfully deleted`;
+      return `Successfully deleted Index '${indexName}'`;
     } else {
       await crudService.deleteAllIndices();
-      return 'All indices successfully deleted';
+      return 'Successfully deleted All indices';
     }
   } catch (err) {
     //console.log(err.message);
@@ -61,7 +61,7 @@ exports.createMapping = async indexName => {
   try {
     const response = await indexService.createMapping(indexName, mapping);
     //console.log('createMapping response: ', response);
-    return `Mapping successfully created on index '${indexName}'`;
+    return `Successfully created Mapping on index '${indexName}'`;
   } catch (err) {
     return err.message.reason;
     // TODO: make the error shorter
