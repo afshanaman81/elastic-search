@@ -48,6 +48,10 @@ Using Postman:
 
 - populate 'movies' index with Json data: <br> `PUT ('localhost:3000/elastic/document/bulk?indexName=movies')`
 
+- delete index 'movies', and start over: <br> `DELETE ('localhost:3000/elastic/index?indexName=movies')`
+
+- delete all indexes: <br> `DELETE ('localhost:3000/elastic/index')`
+
 ## run the node server
 ```npm start```
 
