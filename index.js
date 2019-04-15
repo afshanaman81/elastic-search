@@ -21,6 +21,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', require('./routes/main.routes'));
 app.use('/elastic', require('./routes/elastic.routes'));
 
+
 // ERROR HANDLING
 app.use((req, res, next) => {
   const err = new Error('Not Found');
